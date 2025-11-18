@@ -1,0 +1,8 @@
+{
+  "name": "Lumina Tour Guide",
+  "description": "An AR-style photo tourism app that identifies landmarks, fetches their history via Google Search, and narrates the details using Gemini AI.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
