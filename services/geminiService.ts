@@ -127,13 +127,13 @@ export const generateNarration = async (text: string): Promise<ArrayBuffer | nul
 /**
  * New Feature: Generate Personalized Itinerary
  */
-export const generateItinerary = async (interests: string[]): Promise<ItineraryItem[]> => {
+export const generateItinerary = async (interests: string[], location: string): Promise<ItineraryItem[]> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const interestStr = interests.join(", ");
   
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash',
-    contents: `Create a 1-day walking tour itinerary for a tourist interested in: ${interestStr}. Provide 4 distinct stops.`,
+    contents: `Create a 1-day walking tour itinerary in ${location} for a tourist interested in: ${interestStr}. Find and recommend 4 real, specific places near ${location} that match these interests. Include the actual name of each place, a brief description of what makes it special, and suggested visit duration.`,
     config: {
       responseMimeType: 'application/json',
       responseSchema: {
@@ -147,7 +147,8 @@ export const generateItinerary = async (interests: string[]): Promise<ItineraryI
           },
           required: ['stopName', 'description', 'duration']
         }
-      }
+      },
+      tools: [{ googleSearch: {} }]
     }
   });
 
