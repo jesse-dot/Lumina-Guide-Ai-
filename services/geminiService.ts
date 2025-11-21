@@ -131,29 +131,30 @@ export const generateItinerary = async (interests: string[], location: string): 
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const interestStr = interests.join(", ");
   
+  // Note: responseMimeType is NOT set because we are using googleSearch
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash',
-    contents: `Create a 1-day walking tour itinerary in ${location} for a tourist interested in: ${interestStr}. Find and recommend 4 real, specific places near ${location} that match these interests. Include the actual name of each place, a brief description of what makes it special, and suggested visit duration.`,
+    contents: `Create a 1-day walking tour itinerary in ${location} for a tourist interested in: ${interestStr}. Find and recommend 4 real, specific places near ${location} that match these interests. Include the actual name of each place, a brief description of what makes it special, and suggested visit duration.
+
+Return your response as a JSON array with this exact structure:
+[
+  {
+    "stopName": "Place Name",
+    "description": "Brief description",
+    "duration": "1 hour"
+  }
+]`,
     config: {
-      responseMimeType: 'application/json',
-      responseSchema: {
-        type: Type.ARRAY,
-        items: {
-          type: Type.OBJECT,
-          properties: {
-            stopName: { type: Type.STRING },
-            description: { type: Type.STRING },
-            duration: { type: Type.STRING, description: "e.g. '1 hour'" }
-          },
-          required: ['stopName', 'description', 'duration']
-        }
-      },
       tools: [{ googleSearch: {} }]
     }
   });
 
   try {
-    return JSON.parse(response.text || "[]");
+    const text = response.text || "[]";
+    // Extract JSON from the response (it might be wrapped in markdown code blocks)
+    const jsonMatch = text.match(/\[[\s\S]*\]/);
+    const jsonStr = jsonMatch ? jsonMatch[0] : text;
+    return JSON.parse(jsonStr);
   } catch (e) {
     console.error("Itinerary parse error", e);
     return [];
