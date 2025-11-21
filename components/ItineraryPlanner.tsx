@@ -10,6 +10,7 @@ const INTERESTS = ['History', 'Art', 'Nature', 'Architecture', 'Food', 'Shopping
 
 const ItineraryPlanner: React.FC<Props> = ({ onBack }) => {
   const [selected, setSelected] = useState<string[]>([]);
+  const [location, setLocation] = useState<string>('');
   const [itinerary, setItinerary] = useState<ItineraryItem[] | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -18,10 +19,10 @@ const ItineraryPlanner: React.FC<Props> = ({ onBack }) => {
   };
 
   const handleGenerate = async () => {
-    if (selected.length === 0) return;
+    if (selected.length === 0 || !location.trim()) return;
     setLoading(true);
     try {
-      const items = await generateItinerary(selected);
+      const items = await generateItinerary(selected, location.trim());
       setItinerary(items);
     } catch (e) {
       console.error(e);
@@ -42,8 +43,23 @@ const ItineraryPlanner: React.FC<Props> = ({ onBack }) => {
 
       {!itinerary ? (
         <div className="flex-1 flex flex-col max-w-lg mx-auto w-full animate-fade-in">
-          <p className="text-gray-400 mb-6 text-center">Select your interests to generate a personalized walking tour.</p>
+          <p className="text-gray-400 mb-6 text-center">Enter your location and select your interests to generate a personalized walking tour.</p>
           
+          {/* Location Input */}
+          <div className="mb-6">
+            <label htmlFor="location" className="block text-sm font-medium text-gray-300 mb-2">
+              Your Location
+            </label>
+            <input
+              id="location"
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="e.g., Paris, France or New York City"
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            />
+          </div>
+
           <div className="flex flex-wrap gap-3 mb-10 justify-center">
             {INTERESTS.map(interest => (
               <button
@@ -63,9 +79,9 @@ const ItineraryPlanner: React.FC<Props> = ({ onBack }) => {
           <div className="mt-auto">
              <button
               onClick={handleGenerate}
-              disabled={loading || selected.length === 0}
+              disabled={loading || selected.length === 0 || !location.trim()}
               className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center transition-all duration-300 ${
-                loading || selected.length === 0 
+                loading || selected.length === 0 || !location.trim()
                   ? 'bg-gray-800 text-gray-500 cursor-not-allowed' 
                   : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:opacity-90 shadow-lg shadow-blue-500/30'
               }`}
